@@ -8,7 +8,7 @@ $database = $config['database'];
 $increment_only = $config['increment_only'];
 $destination_path = $config['destination_path'];
 
-$cache_file = "chunked_tables.json";
+$cache_file = $destination_path . "chunked_tables.json";
 
 
 if (file_exists($cache_file)) {
@@ -70,6 +70,11 @@ foreach ($tables as $table) {
         $q = $conn->query($sql);
         $max = $q->fetch_row()[0];
         if ($max > $last_max) {
+            // calculate step and only jump by step or 1M in next round
+            $tenth = floor($max/10);
+            $step = max($tenth,1000000);
+            $max = min($last_max + $step, $max);
+
             echo "Dumping $table from $column >= $last_max to $max\n";
             $where = "--where=\"$column > $last_max AND $column <= $max\"";
 
@@ -93,7 +98,9 @@ foreach ($tables as $table) {
     }
 
     exec("mysqldump $where --host=$hostname --user=$username --password=$password $skipCreate $database $table | gzip > $destination_path$dest_name");
+
+    file_put_contents($cache_file, json_encode($cache));
 }
 
 // Save cache
-file_put_contents($cache_file, json_encode($cache));
+//file_put_contents($cache_file, json_encode($cache));
