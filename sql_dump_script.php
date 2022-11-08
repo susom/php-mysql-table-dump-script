@@ -10,6 +10,9 @@ $destination_path = $config['destination_path'];
 
 $cache_file = $destination_path . "chunked_tables.json";
 
+$pid_file = $destination_path . "pid_" . getmypid();
+
+file_put_contents($pid_file, date("Y-m-d H:i:s"));
 
 if (file_exists($cache_file)) {
     $cache = json_decode(file_get_contents($cache_file),true);
@@ -101,6 +104,9 @@ foreach ($tables as $table) {
 
     file_put_contents($cache_file, json_encode($cache));
 }
+
+unlink($pid_file);
+
 
 // Save cache
 //file_put_contents($cache_file, json_encode($cache));
