@@ -6,7 +6,7 @@ $hostname = $config['hostname'];
 $password = $config['password'];
 $database = $config['database'];
 $increment_only = $config['increment_only'];
-
+$destination_path = $config['destination_path'];
 
 $cache_file = "chunked_tables.json";
 
@@ -92,7 +92,7 @@ foreach ($tables as $table) {
         $dest_name = "$table.sql.gz";
     }
 
-    exec("mysqldump $where --host=$hostname --user=$username --password=$password $skipCreate $database $table | gzip > dumps/$dest_name");
+    exec("mysqldump $where --host=$hostname --user=$username --password=$password $skipCreate $database $table | gzip > $destination_path$dest_name");
 }
 
 // Save cache
