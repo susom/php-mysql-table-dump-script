@@ -62,6 +62,10 @@ while ($row = $q->fetch_row()) {
 
 echo "Found " . count($tables) . " tables - " . count($cache) . " are chunked\n";
 
+if ($increment_only == 1) {
+    echo "Only dumping incremental tables\n";
+}
+
 foreach ($tables as $table) {
     $skipCreate="";
     $where="";
@@ -95,7 +99,7 @@ foreach ($tables as $table) {
     } else {
         // Dump entire table
         if ($increment_only == 1) {
-            echo "Skipping $table - increment only\n";
+            //echo "Skipping $table - increment only\n";
             continue;
         }
         echo "Dumping $table in entirety\n";
