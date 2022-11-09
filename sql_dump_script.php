@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set('America/Los_Angeles');
+
 $config = parse_ini_file("config.ini");
 $username = $config['username'];
 $hostname = $config['hostname'];
