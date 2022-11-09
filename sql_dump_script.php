@@ -74,7 +74,7 @@ foreach ($tables as $table) {
         $max = $q->fetch_row()[0];
         if ($max > $last_max) {
             // calculate step and only jump by step or 1M in next round
-            $tenth = floor($max/10);
+            $tenth = floor($max/20);
             $step = max($tenth,1000000);
             $max = min($last_max + $step, $max);
 
@@ -83,7 +83,9 @@ foreach ($tables as $table) {
 
             if ($last_max > 0) $skipCreate = "--skip-add-drop-table --no-create-info";
 
-            $dest_name = "$table" . "_" . "$last_max" . "_" . "$max.sql.gz";
+            $dest_name = "$table" . "_" .
+                str_pad($last_max,12,"0",STR_PAD_LEFT) . "_" .
+                str_pad($max,12,"0",STR_PAD_LEFT) . ".sql.gz";
             // Update cache
             $cache[$table]['last_max'] = $max;
         } else {

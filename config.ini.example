@@ -3,4 +3,4 @@ database = redcap
 password = root
 hostname = db
 increment_only = 1
-destination_path = ./
+destination_path = ./dumps/
