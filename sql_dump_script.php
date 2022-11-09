@@ -21,7 +21,7 @@ file_put_contents($pid_file, date("Y-m-d H:i:s"));
  * @param $message
  * @return null
  */
-function log($message, $log_file) {
+function logit($message, $log_file) {
     echo $message;
     file_put_contents($log_file, $message, FILE_APPEND);
 }
@@ -74,10 +74,10 @@ while ($row = $q->fetch_row()) {
     $tables[] = $row[0];
 }
 
-log("Found " . count($tables) . " tables - " . count($cache) . " are chunked\n", $log_file);
+logit("Found " . count($tables) . " tables - " . count($cache) . " are chunked\n", $log_file);
 
 if ($increment_only == 1) {
-    log("Only dumping incremental tables\n", $log_file);
+    logit("Only dumping incremental tables\n", $log_file);
 }
 
 foreach ($tables as $table) {
@@ -97,7 +97,7 @@ foreach ($tables as $table) {
             $max = min($last_max + $step, $max);
             $row_count = $max - $last_max;
 
-            log("Dumping $row_count rows from $table where $last_max < $column <= $max\n", $log_file);
+            logit("Dumping $row_count rows from $table where $last_max < $column <= $max\n", $log_file);
             $where = "--where=\"$column > $last_max AND $column <= $max\"";
 
             if ($last_max > 0) $skipCreate = "--skip-add-drop-table --no-create-info";
@@ -109,7 +109,7 @@ foreach ($tables as $table) {
             // Update cache
             $cache[$table]['last_max'] = $max;
         } else {
-            log("Skip chunked table $table - no new entries\n", $log_file);
+            logit("Skip chunked table $table - no new entries\n", $log_file);
             continue;
         }
     } else {
@@ -118,7 +118,7 @@ foreach ($tables as $table) {
             //echo "Skipping $table - increment only\n";
             continue;
         }
-        log("Dumping $table in entirety\n", $log_file);
+        logit("Dumping $table in entirety\n", $log_file);
         $dest_name = "$table.sql.gz";
     }
 
