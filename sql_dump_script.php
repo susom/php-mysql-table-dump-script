@@ -130,6 +130,7 @@ foreach ($tables as $table) {
 
     // Move the completed file to a subdir
     exec("mv $destination_path$dest_name $move_when_done_path$dest_name");
+    logit("Moved $dest_name to $move_when_done_path\n", $log_file);
 
 }
 
