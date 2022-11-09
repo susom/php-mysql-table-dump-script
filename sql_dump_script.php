@@ -81,11 +81,13 @@ foreach ($tables as $table) {
             $tenth = floor($max/20);
             $step = max($tenth,1000000);
             $max = min($last_max + $step, $max);
+            $row_count = $max - $last_max;
 
-            echo "Dumping $table from $column >= $last_max to $max\n";
+            echo "Dumping $row_count rows from $table where $last_max < $column <= $max\n";
             $where = "--where=\"$column > $last_max AND $column <= $max\"";
 
             if ($last_max > 0) $skipCreate = "--skip-add-drop-table --no-create-info";
+
 
             $dest_name = "$table" . "_" .
                 str_pad($last_max,12,"0",STR_PAD_LEFT) . "_" .
