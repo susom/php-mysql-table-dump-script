@@ -9,10 +9,12 @@ $password = $config['password'];
 $database = $config['database'];
 $increment_only = $config['increment_only'];
 $destination_path = $config['destination_path'];
+
+$move_when_done_path = $config['move_when_done_path'];
+
+
 $log_file = $destination_path . "sql_dump.log";
-
 $cache_file = $destination_path . "chunked_tables.json";
-
 $pid_file = $destination_path . "pid_" . getmypid();
 
 file_put_contents($pid_file, date("Y-m-d H:i:s"));
@@ -125,6 +127,10 @@ foreach ($tables as $table) {
     exec("mysqldump $where --host=$hostname --user=$username --password=$password $skipCreate $database $table | gzip > $destination_path$dest_name");
 
     file_put_contents($cache_file, json_encode($cache));
+
+    // Move the completed file to a subdir
+    exec("mv $destination_path$dest_name $move_when_done_path$dest_name");
+
 }
 
 unlink($pid_file);

@@ -4,3 +4,4 @@ password = root
 hostname = db
 increment_only = 1
 destination_path = ./dumps/
+move_when_done_path = ./dumps/done/
