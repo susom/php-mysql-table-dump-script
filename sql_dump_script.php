@@ -70,7 +70,10 @@ if (!$conn = new mysqli($hostname, $username, $password, $database)) {
 
 # Get All Tables
 $tables = [];
-$sql = "show tables from redcap";
+//$sql = "show tables from redcap";
+# Skip views!
+$sql = "show full tables where Table_type = 'BASE TABLE'";
+
 $q = $conn->query($sql);
 while ($row = $q->fetch_row()) {
     $tables[] = $row[0];
