@@ -42,7 +42,7 @@ do
       done
       echo "$(date -u) [$i] $filename: Starting Import into $INSTANCE $DESTDB" | tee -a $OUTPUTFILE
       gcloud sql import sql $INSTANCE "gs://$BUCKET/$BUCKETFOLDER/$filename" --database=$DESTDB --quiet 2>&1 | tee -a $OUTPUTFILE
-      RESULT=$?
+#      RESULT=$?
 #      if [ $RESULT -eq 0 ]; then
 #        echo "$(date -u) [$i] $filename: Import Complete" | tee -a $OUTPUTFILE
 #      else

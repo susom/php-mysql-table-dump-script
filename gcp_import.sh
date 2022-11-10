@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This was skipped in lieu of move_and_import
+
 BUCKET=redcap_dev_sql_dumps
 INSTANCE=redcap-dev-mysql
 DESTDB=test2
