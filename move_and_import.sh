@@ -41,14 +41,14 @@ do
          RUNNING_PROCESS_NAME=$(gcloud sql operations list --instance=redcap-dev-mysql | grep "RUNNING" | cut -d' ' -f1)
       done
       echo "$(date -u) [$i] $filename: Starting Import into $INSTANCE $DESTDB" | tee -a $OUTPUTFILE
-      gcloud sql import sql $INSTANCE "gs://$BUCKET/$BUCKETFOLDER/$filename" --database=$DESTDB --quiet 2>&1 | tee -a $OUTPUTFILE
-#      RESULT=$?
-#      if [ $RESULT -eq 0 ]; then
-#        echo "$(date -u) [$i] $filename: Import Complete" | tee -a $OUTPUTFILE
-#      else
-#        echo "$(date -u) [$i] $filename: ERROR importing" | tee -a $OUTPUTFILE
-#        break 2
-#      fi
+      RESULT=$(gcloud sql import sql $INSTANCE "gs://$BUCKET/$BUCKETFOLDER/$filename" --database=$DESTDB --quiet 2>&1)
+      echo "$RESULT" | tee -a $OUTPUTFILE
+      if [[ $RESULT == *"ERROR"* ]]; then
+        echo "$(date -u) [$i] $filename: ERROR importing" | tee -a $OUTPUTFILE
+        break 2
+      else
+        echo "OK"
+      fi
       echo "---------------------------------" | tee -a $OUTPUTFILE
       # take a breath
       sleep 2
