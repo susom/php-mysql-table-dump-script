@@ -9,7 +9,7 @@ BUCKET=redcap_dev_sql_dumps
 INSTANCE=redcap-dev-mysql
 DESTDB=test2
 BUCKETFOLDER=test2
-OUTPUTFILE=import.log
+OUTPUTFILE=$(date "+%yy-%m-%d_%H%M")_import.log
 
 echo "----------------------------"
 echo $(date -u) STARTING

@@ -159,6 +159,7 @@ foreach ($tables as $table) {
             // We have an embedded where clause
             list($table,$part,$filter) = explode("|",$table,3);
             $where = "--where=\"$filter\"";
+            $skipCreate = $part == 1 ? "" : "--skip-add-drop-table --no-create-info";
             $table_filename = $table."_part".$part;
         } else {
             $table_filename = $table;
