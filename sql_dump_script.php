@@ -124,7 +124,7 @@ foreach ($tables as $table) {
         $dest_name = "$table.sql.gz";
     }
 
-    exec("mysqldump $where --host=$hostname --user=$username --password=$password $skipCreate $database $table | gzip > $destination_path$dest_name");
+    exec("mysqldump $where --single-transaction --host=$hostname --user=$username --password=$password $skipCreate $database $table | gzip > $destination_path$dest_name");
 
     file_put_contents($cache_file, json_encode($cache));
 
