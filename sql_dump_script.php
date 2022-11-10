@@ -153,7 +153,7 @@ foreach ($tables as $table) {
             continue;
         }
         logit("Dumping $table in entirety\n", $log_file);
-        if(str_contains("|",$table)) {
+        if(strpos($table, "|") !== false) {
             // We have an embedded where clause
             list($table,$part,$filter) = explode("|",$table,3);
             $where = "--where=\"$filter\"";
