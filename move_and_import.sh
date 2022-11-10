@@ -30,7 +30,7 @@ do
       gsutil cp $filename gs://$BUCKET/$BUCKETFOLDER/$filename
       # rename local file by appending a done suffix
       rm -f "$filename".done 2> /dev/null
-      mv "$filename" "$filename".done
+      mv "$filename" "done/$filename"
       # start importing the file
       # check that no active processes are running before beginning import
       RUNNING_PROCESS_NAME=$(gcloud sql operations list --instance=redcap-dev-mysql | grep "RUNNING" | cut -d' ' -f1)
