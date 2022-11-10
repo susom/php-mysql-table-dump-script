@@ -8,8 +8,9 @@ $hostname = $config['hostname'];
 $password = $config['password'];
 $database = $config['database'];
 $increment_only = $config['increment_only'];
-$destination_path = $config['destination_path'];
 
+
+$destination_path = $config['destination_path'];
 $move_when_done_path = $config['move_when_done_path'];
 
 
@@ -18,6 +19,9 @@ $cache_file = $destination_path . "chunked_tables.json";
 $pid_file = $destination_path . "pid_" . getmypid();
 
 file_put_contents($pid_file, date("Y-m-d H:i:s"));
+
+$pid_segment_tables = ['redcap_data', 'redcap_metadata_archive'];
+
 
 /**
  * @param $message
@@ -78,10 +82,10 @@ $include_redcap_data = false;
 $q = $conn->query($sql);
 while ($row = $q->fetch_row()) {
     $table = $row[0];
-    if ($table == "redcap_data") {
-        // We want to break REDCap data into multiple segments to speed up parallel uploading so
+    if (in_array($table, $pid_segment_tables)) {
+        // We want to break REDCap data and other pid-tables into multiple segments to speed up parallel uploading so
         // I'm going to hack in a where clause for the redcap_data queries...
-        $sql2 = "select max(project_id) from redcap_data";
+        $sql2 = "select max(project_id) from $table";
         $q2 = $conn->query($sql2);
         $row = $q2->fetch_row();
         $max_pid = $row[0];
@@ -130,7 +134,7 @@ foreach ($tables as $table) {
             if ($last_max > 0) $skipCreate = "--skip-add-drop-table --no-create-info";
 
 
-            $dest_name = "$table" . "_" .
+            $dest_name = "i_$table" . "_" .
                 str_pad($last_max,12,"0",STR_PAD_LEFT) . "_" .
                 str_pad($max,12,"0",STR_PAD_LEFT) . ".sql.gz";
             // Update cache
