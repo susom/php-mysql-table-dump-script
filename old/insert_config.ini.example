@@ -1,0 +1,8 @@
+username = root
+database = redcap
+password = root
+hostname = db
+increment_only = 1
+
+; where all the .sql.gz files are located
+extract_path = ./dumps/
