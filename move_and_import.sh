@@ -1,0 +1,59 @@
+#!/bin/bash
+
+# This script is meant to run on the docker container on redcap-db-p03 and monitor a directory for new files
+# if found, it should push the file to the google bucket and initiate an import into the database
+
+# assumes /PROD_TABLE_BACKUP is mounted to the google container and you are running this in the /PROD_TABLE_BACKUP/dump_complete folder
+
+BUCKET=redcap_dev_sql_dumps
+INSTANCE=redcap-dev-mysql
+DESTDB=test2
+BUCKETFOLDER=test2
+OUTPUTFILE=import.log
+
+echo "----------------------------"
+echo $(date -u) STARTING
+
+i=0
+while true
+do
+  cnt=$(ls -1q * | grep .sql.gz$ | wc -l)
+
+  if [ $cnt -eq 0 ]; then
+    # no files to process - so sleep for a minute and check again
+    echo "."
+    sleep 60
+  else
+    for filename in $(ls | grep .sql.gz$) ; do
+      ((i=i+1))
+      echo "$(date -u) [$i] $filename: copying to $BUCKET/$BUCKETFOLDER" | tee -a $OUTPUTFILE
+      gsutil cp $filename gs://$BUCKET/$BUCKETFOLDER/$filename
+      # rename local file by appending a done suffix
+      rm -f "$filename".done 2> /dev/null
+      mv "$filename" "$filename".done
+      # start importing the file
+      # check that no active processes are running before beginning import
+      RUNNING_PROCESS_NAME=$(gcloud sql operations list --instance=redcap-dev-mysql | grep "RUNNING" | cut -d' ' -f1)
+      until [[ -z "$RUNNING_PROCESS_NAME" ]]; do
+         # we have a running process -- we must wait for it
+         echo "$(date -u) [$i] $filename: process $RUNNING_PROCESS_NAME still running - waiting to complete..." | tee -a $OUTPUTFILE
+         gcloud sql operations wait "$RUNNING_PROCESS_NAME" --timeout=10 --verbosity="critical" 2>&1 | tee -a $OUTPUTFILE
+         RUNNING_PROCESS_NAME=$(gcloud sql operations list --instance=redcap-dev-mysql | grep "RUNNING" | cut -d' ' -f1)
+      done
+      echo "$(date -u) [$i] $filename: Starting Import into $INSTANCE $DESTDB" | tee -a $OUTPUTFILE
+      gcloud sql import sql $INSTANCE "gs://$BUCKET/$BUCKETFOLDER/$filename" --database=$DESTDB --quiet 2>&1 | tee -a $OUTPUTFILE
+      RESULT=$?
+#      if [ $RESULT -eq 0 ]; then
+#        echo "$(date -u) [$i] $filename: Import Complete" | tee -a $OUTPUTFILE
+#      else
+#        echo "$(date -u) [$i] $filename: ERROR importing" | tee -a $OUTPUTFILE
+#        break 2
+#      fi
+      echo "---------------------------------" | tee -a $OUTPUTFILE
+      # take a breath
+      sleep 2
+    done
+    echo "Finished loop $i processing $cnt files" | tee -a $OUTPUTFILE
+  fi
+done
+
