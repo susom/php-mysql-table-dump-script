@@ -94,7 +94,9 @@ while ($row = $q->fetch_row()) {
         $part=1;
         while ($range_start <= $max_pid) {
             $next_range_start = $range_start + $pid_bin_size;
-            $tables[] = $table . "|$part|project_id >= $range_start and project_id < $next_range_start";
+            $tables[] = $table . "|" .
+                str_pad($part,3,"0",STR_PAD_LEFT) . "|" .
+                "project_id >= $range_start and project_id < $next_range_start";
             $range_start = $next_range_start;
             $part++;
         }
