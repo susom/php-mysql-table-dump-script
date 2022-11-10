@@ -152,7 +152,7 @@ foreach ($tables as $table) {
             //echo "Skipping $table - increment only\n";
             continue;
         }
-        logit("Dumping $table in entirety\n", $log_file);
+        logit("Dumping $table ...\n", $log_file);
         if(strpos($table, "|") !== false) {
             // We have an embedded where clause
             list($table,$part,$filter) = explode("|",$table,3);
