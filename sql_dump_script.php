@@ -99,9 +99,12 @@ while ($row = $q->fetch_row()) {
             $part++;
         }
     } else {
-        $tables[] = $row[0];
+        // Temp for andy
+        //$tables[] = $table;
     }
 }
+
+var_dump($tables);
 
 logit("Found " . count($tables) . " tables parts to export - " . count($cache) . " are chunked\n", $log_file);
 
