@@ -24,6 +24,7 @@ file_put_contents($pid_file, date("Y-m-d H:i:s"));
  * @return null
  */
 function logit($message, $log_file) {
+    $message = "[" . date("Y-m-d H:i:s") . "] " . $message;
     echo $message;
     file_put_contents($log_file, $message, FILE_APPEND);
 }
@@ -68,23 +69,44 @@ if (!$conn = new mysqli($hostname, $username, $password, $database)) {
 }
 
 
-# Get All Tables
+# Get All Tables and skip VIEWS
 $tables = [];
-//$sql = "show tables from redcap";
-# Skip views!
 $sql = "show full tables where Table_type = 'BASE TABLE'";
+
+$include_redcap_data = false;
 
 $q = $conn->query($sql);
 while ($row = $q->fetch_row()) {
-    $tables[] = $row[0];
+    $table = $row[0];
+    if ($table == "redcap_data") {
+        // We want to break REDCap data into multiple segments to speed up parallel uploading so
+        // I'm going to hack in a where clause for the redcap_data queries...
+        $sql2 = "select max(project_id) from redcap_data";
+        $q2 = $conn->query($sql2);
+        $row = $q2->fetch_row();
+        $max_pid = $row[0];
+        $pid_bin_size=1000; // Break project exports by pid into bins of this range
+        $range_start=0;
+        $part=1;
+        while ($range_start <= $max_pid) {
+            $next_range_start = $range_start + $pid_bin_size;
+            $tables[] = $table . "|$part|project_id >= $range_start and project_id < $next_range_start";
+            $range_start = $next_range_start;
+            $part++;
+        }
+    } else {
+        $tables[] = $row[0];
+    }
 }
 
-logit("Found " . count($tables) . " tables - " . count($cache) . " are chunked\n", $log_file);
+logit("Found " . count($tables) . " tables parts to export - " . count($cache) . " are chunked\n", $log_file);
 
 if ($increment_only == 1) {
     logit("Only dumping incremental tables\n", $log_file);
 }
 
+
+# We want to break redcap_data into multiple smaller files as it is so large
 foreach ($tables as $table) {
     $skipCreate="";
     $where="";
@@ -124,11 +146,19 @@ foreach ($tables as $table) {
             continue;
         }
         logit("Dumping $table in entirety\n", $log_file);
-        $dest_name = "$table.sql.gz";
+        if(str_contains("|",$table)) {
+            // We have an embedded where clause
+            list($table,$part,$filter) = explode("|",$table,3);
+            $where = "--where=\"$filter\"";
+            $table_filename = $table."_part".$part;
+        } else {
+            $table_filename = $table;
+        }
+
+        $dest_name = "$table_filename.sql.gz";
     }
 
     exec("mysqldump $where --single-transaction --host=$hostname --user=$username --password=$password $skipCreate $database $table | gzip > $destination_path$dest_name");
-
     file_put_contents($cache_file, json_encode($cache));
 
     // Move the completed file to a subdir
