@@ -105,7 +105,7 @@ while ($row = $q->fetch_row()) {
     }
 }
 
-var_dump($tables);
+//var_dump($tables);
 
 logit("Found " . count($tables) . " tables parts to export - " . count($cache) . " are chunked\n", $log_file);
 
@@ -178,6 +178,6 @@ foreach ($tables as $table) {
 
 unlink($pid_file);
 
-
-// Save cache
-//file_put_contents($cache_file, json_encode($cache));
+echo "\n";
+logit("----DONE----", $log_file);
+echo "\n";
