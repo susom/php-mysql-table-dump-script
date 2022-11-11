@@ -101,8 +101,7 @@ while ($row = $q->fetch_row()) {
             $part++;
         }
     } else {
-        // Temp for andy
-        //$tables[] = $table;
+        $tables[] = $table;
     }
 }
 
