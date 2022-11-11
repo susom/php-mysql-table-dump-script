@@ -22,6 +22,7 @@ file_put_contents($pid_file, date("Y-m-d H:i:s"));
 
 $pid_segment_tables = ['redcap_data', 'redcap_metadata_archive'];
 
+$inc_row_count = 0;
 
 /**
  * @param $message
@@ -137,6 +138,7 @@ foreach ($tables as $table) {
 
             if ($last_max > 0) $skipCreate = "--skip-add-drop-table --no-create-info";
 
+            $inc_row_count = $inc_row_count + $row_count;
 
             $dest_name = "i_$table" . "_" .
                 str_pad($last_max,12,"0",STR_PAD_LEFT) . "_" .
@@ -180,4 +182,4 @@ unlink($pid_file);
 
 echo "\n";
 logit("----DONE----", $log_file);
-echo "\n";
+echo "Incremental Rows Dumped: $inc_row_count\n";
