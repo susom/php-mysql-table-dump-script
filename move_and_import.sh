@@ -9,7 +9,7 @@ BUCKET=redcap_dev_sql_dumps
 INSTANCE=redcap-dev-mysql
 DESTDB=test2
 BUCKETFOLDER=test2
-OUTPUTFILE=$(date "+%yy-%m-%d_%H%M")_import.log
+OUTPUTFILE=$(date "+%Y-%m-%d_%H%M")_import.log
 
 echo "----------------------------"
 echo $(date -u) STARTING
@@ -17,7 +17,7 @@ echo $(date -u) STARTING
 i=0
 while true
 do
-  cnt=$(ls -1q * | grep .sql.gz$ | wc -l)
+  cnt=$(ls -1q | grep .sql.gz$ | wc -l)
 
   if [ $cnt -eq 0 ]; then
     # no files to process - so sleep for a minute and check again
@@ -43,11 +43,12 @@ do
       echo "$(date -u) [$i] $filename: Starting Import into $INSTANCE $DESTDB" | tee -a $OUTPUTFILE
       RESULT=$(gcloud sql import sql $INSTANCE "gs://$BUCKET/$BUCKETFOLDER/$filename" --database=$DESTDB --quiet 2>&1)
       echo "$RESULT" | tee -a $OUTPUTFILE
-      if [[ $RESULT == *"ERROR"* ]]; then
-        echo "$(date -u) [$i] $filename: ERROR importing" | tee -a $OUTPUTFILE
+      if [[ $RESULT == *"longer than expected"* ]]; then
+        echo "$(date -u) [$i] $filename: Timeout" | tee -a $OUTPUTFILE
+        continue
+      elif [[ $RESULT == *"ERROR"* ]]; then
+        echo "Unknown error: $RESULT"
         break 2
-      else
-        echo "OK"
       fi
       echo "---------------------------------" | tee -a $OUTPUTFILE
       # take a breath
