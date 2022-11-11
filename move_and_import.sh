@@ -37,7 +37,7 @@ do
       until [[ -z "$RUNNING_PROCESS_NAME" ]]; do
          # we have a running process -- we must wait for it
          echo "$(date -u) [$i] $filename: process $RUNNING_PROCESS_NAME still running - waiting to complete..." | tee -a $OUTPUTFILE
-         gcloud sql operations wait "$RUNNING_PROCESS_NAME" --timeout=10 --verbosity="critical" 2>&1 | tee -a $OUTPUTFILE
+         gcloud sql operations wait "$RUNNING_PROCESS_NAME" --timeout=30 --verbosity="critical" 2>&1 | tee -a $OUTPUTFILE
          RUNNING_PROCESS_NAME=$(gcloud sql operations list --instance=redcap-dev-mysql | grep "RUNNING" | cut -d' ' -f1)
       done
       echo "$(date -u) [$i] $filename: Starting Import into $INSTANCE $DESTDB" | tee -a $OUTPUTFILE
@@ -45,10 +45,13 @@ do
       echo "$RESULT" | tee -a $OUTPUTFILE
       if [[ $RESULT == *"longer than expected"* ]]; then
         echo "$(date -u) [$i] $filename: Timeout" | tee -a $OUTPUTFILE
-        continue
+        sleep 5
+      elif [[ $RESULT == *"in progress"* ]]; then
+        echo "$(date -u) [$i] $filename: Another operation in progress" | tee -a $OUTPUTFILE
+        sleep 5
       elif [[ $RESULT == *"ERROR"* ]]; then
-        echo "Unknown error: $RESULT"
-        break 2
+        echo "Unknown error" | tee -a $OUTPUTFILE
+        sleep 60
       fi
       echo "---------------------------------" | tee -a $OUTPUTFILE
       # take a breath
