@@ -134,7 +134,7 @@ foreach ($tables as $table) {
             $row_count = $max - $last_max;
 
             if($row_count < $min_rows_for_increment) {
-                logit("Skipping $table incrment - only $row_count rows\n", $log_file);
+                logit("Skipping chunked table $table - only $row_count new rows which is less than $min_rows_for_increment\n", $log_file);
                 continue;
             }
 
@@ -174,7 +174,7 @@ foreach ($tables as $table) {
         $dest_name = "$table_filename.sql.gz";
     }
 
-    exec("mysqldump $where --single-transaction --host=$hostname --user=$username --password=$password $skipCreate $database $table | gzip > $destination_path$dest_name");
+    exec("mysqldump $where --default-character-set=utf8mb4 --single-transaction --host=$hostname --user=$username --password=$password $skipCreate $database $table | gzip > $destination_path$dest_name");
     file_put_contents($cache_file, json_encode($cache));
 
     // Move the completed file to a subdir
