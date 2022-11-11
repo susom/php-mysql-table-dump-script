@@ -3,5 +3,6 @@ database = redcap
 password = root
 hostname = db
 increment_only = 1
+min_rows_for_increment = 1000
 destination_path = ./dumps/
 move_when_done_path = ./dumps/done/

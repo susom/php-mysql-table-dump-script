@@ -8,7 +8,7 @@ $hostname = $config['hostname'];
 $password = $config['password'];
 $database = $config['database'];
 $increment_only = $config['increment_only'];
-
+$min_rows_for_increment = $config['min_rows_for_increment'];
 
 $destination_path = $config['destination_path'];
 $move_when_done_path = $config['move_when_done_path'];
@@ -132,6 +132,11 @@ foreach ($tables as $table) {
             $step = max($tenth,1000000);
             $max = min($last_max + $step, $max);
             $row_count = $max - $last_max;
+
+            if($row_count < $min_rows_for_increment) {
+                logit("Skipping $table incrment - only $row_count rows\n", $log_file);
+                continue;
+            }
 
             logit("Dumping $row_count rows from $table where $last_max < $column <= $max\n", $log_file);
             $where = "--where=\"$column > $last_max AND $column <= $max\"";
