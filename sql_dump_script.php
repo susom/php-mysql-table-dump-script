@@ -180,6 +180,5 @@ foreach ($tables as $table) {
 
 unlink($pid_file);
 
+logit("----DONE---- ($inc_row_count incremental rows)\n", $log_file);
 echo "\n";
-logit("----DONE----", $log_file);
-echo "Incremental Rows Dumped: $inc_row_count\n";
