@@ -52,7 +52,7 @@
   "redcap_log_view_old": {
     "column": "log_view_id",
     "last_max": 0,
-    "bin_count": 3000000
+    "bin_count": 10000000
   },
   "redcap_outgoing_email_sms_log": {
     "column": "email_id",
@@ -62,6 +62,6 @@
   "redcap_log_api_custom": {
     "column": "log_id",
     "last_max": 0,
-    "bin_count": 1000000
+    "bin_count": 6000000
   }
 }
