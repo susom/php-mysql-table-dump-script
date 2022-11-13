@@ -77,6 +77,7 @@ class rds
             $cache[$table]['last_max'] = $last_max;
         }
         $this->saveIncrementCache($cache);
+        $this->logit("Updating cache for $table to $last_max");
     }
 
     private function getIncrementCache()
@@ -99,7 +100,7 @@ class rds
 
     private function logit($message)
     {
-        $message = "[" . date("Y-m-d H:i:s") . "] " . $message;
+        $message = "[" . date("Y-m-d H:i:s") . "] " . $message . "\n";
         echo $message . "\n";
         file_put_contents($this->log_file, $message, FILE_APPEND);
     }
@@ -187,9 +188,11 @@ class rds
                 "where" => "",
                 "create" => "",
                 "type" => "normal",
-                "filename" => "other_" . count($all_tables) . "_tables"
+                "filename" => "all_other_" . count($all_tables) . "_tables"
             ];
         }
+
+        $this->logit("DUMPS\n" . implode("\n",$dumps));
 
         return $dumps;
     }
@@ -204,7 +207,7 @@ class rds
                 "--host=$this->hostname --user=$this->username --password=$this->password " .
                 "$create $this->database $table | gzip > $this->dump_working_path" . "$filename" . ".sql.gz";
 
-            $this->logit("Dump: $command");
+            $this->logit("[COMMAND]: $command");
             if ($this->skip_dumps !== 1) {
                 exec($command);
             }
