@@ -1,4 +1,6 @@
 dumps/*
 config.ini
+config.ini.original
+PROD_TABLE_BACKUP
 chunked_tables.json
 import.log

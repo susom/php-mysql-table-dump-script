@@ -2,7 +2,11 @@ username = root
 database = redcap
 password = root
 hostname = db
-increment_only = 1
-min_rows_for_increment = 1000
+
+increment_mode = 1
+increment_mode_min_rows = 10000
+
+skip_dumps = 1
+
 destination_path = ./dumps/
 move_when_done_path = ./dumps/done/

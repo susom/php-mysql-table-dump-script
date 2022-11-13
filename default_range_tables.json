@@ -1,0 +1,10 @@
+{
+  "redcap_data": {
+    "column": "project_id",
+    "bin_count": 10000000
+  },
+  "redcap_metadata_archive": {
+    "column": "project_id",
+    "bin_count": 100000
+  }
+}
