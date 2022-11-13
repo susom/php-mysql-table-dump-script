@@ -5,26 +5,26 @@ date_default_timezone_set('America/Los_Angeles');
 
 class rds
 {
-    public mysqli $conn;
+    public $conn;
 
-    private string $username;
-    private string $database;
-    private string $password;
-    private string $hostname;
+    private $username;
+    private $database;
+    private $password;
+    private $hostname;
 
-    public int $increment_mode;
-    public int $increment_mode_min_rows;
-    public int $skip_dumps;
+    public $increment_mode;
+    public $increment_mode_min_rows;
+    public $skip_dumps;
 
-    public string $dump_working_path;
-    public string $dump_complete_path;
+    public $dump_working_path;
+    public $dump_complete_path;
 
-    public string $increment_cache_file;
-    public string $log_file;
-    public string $pid_file;
+    public $increment_cache_file;
+    public $log_file;
+    public $pid_file;
 
-    private array $range_tables;
-    public array $increment_cache;
+    private $range_tables;
+    public  $increment_cache;
 
     public function __construct()
     {
