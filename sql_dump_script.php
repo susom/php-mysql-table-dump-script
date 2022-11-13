@@ -15,9 +15,12 @@ class rds
     public $increment_mode;
     public $increment_mode_min_rows;
     public $skip_dumps;
+    public $range_mode;
+    public $other_tables;
 
     public $dump_working_path;
     public $dump_complete_path;
+    public $move_dumps;
 
     public $increment_cache_file;
     public $log_file;
@@ -36,11 +39,15 @@ class rds
 
         $this->increment_mode = $config['increment_mode'];
         $this->increment_mode_min_rows = $config['increment_mode_min_rows'];
+        $this->range_mode = $config['range_mode'];
+        $this->other_tables = $config['other_tables'];
 
         $this->dump_working_path = $config['dump_working_path'];
         $this->dump_complete_path = $config['dump_complete_path'];
 
         $this->skip_dumps = $config['skip_dumps'];
+
+        $this->move_dumps = $config['move_dumps'];
 
         $this->log_file = $this->dump_working_path . "sql_dump.log";
         $this->increment_cache_file = $this->dump_working_path . "increment_table_cache.json";
@@ -117,10 +124,10 @@ class rds
 
         # Process Incremental Tables
         foreach ($this->getIncrementCache() as $table => $params) {
-            if ($this->increment_mode) {
-                $this->logit("Processing Increments");
-                if (in_array($table, $all_tables)) {
-                    unset($all_tables[$table]);
+            if (in_array($table, $all_tables)) {
+                unset($all_tables[$table]);
+                if ($this->increment_mode) {
+//                    $this->logit("Processing Increments");
                     $column = $params['column'];
                     $last_max = $params['last_max'];
                     $bin_count = $params['bin_count'];
@@ -133,7 +140,7 @@ class rds
                             "create" => $start == 0 ? "" : "--skip-add-drop-table --no-create-info",
                             "type" => "incremental",
                             "last_max" => $end,
-                            "filename" => str_pad("i_" . $table, 25, "_", STR_PAD_RIGHT) .
+                            "filename" => str_pad("i_" . $table, 32, "_", STR_PAD_RIGHT) .
                                 str_pad($start,10,"0",STR_PAD_LEFT) . "_" .
                                 str_pad($end,10,"0",STR_PAD_LEFT)
 
@@ -147,38 +154,42 @@ class rds
         foreach ($this->getRangeTables() as $table => $params) {
             if (in_array($table, $all_tables)) {
                 unset($all_tables[$table]);
-                $column = $params['column'];
-                $bin_count = $params['bin_count'];
-                $ranges = $this->getBinValues($table, $column, 0, $bin_count);
+                if ($this->range_mode) {
+                    $column = $params['column'];
+                    $bin_count = $params['bin_count'];
+                    $ranges = $this->getBinValues($table, $column, 0, $bin_count);
 
-                $digits = floor(log(count($ranges),10))+1;
-                $i = 0;
-                foreach ($ranges as $start => $end) {
-                    $i++;
-                    $part = str_pad($i,$digits,"0",STR_PAD_LEFT) . "of" . count($ranges);
-                    $dumps[] = [
-                        "table" => $table,
-                        "where" => "--where=\"$column > $start and $column <= $end\"",
-                        "create" => $start == 0 ? "" : "--skip-add-drop-table --no-create-info",
-                        "type" => "range",
-                        "last_max" => $end,
-                        "filename" => str_pad("r_" . $table, 25, "_",STR_PAD_RIGHT) .
-                            $part . "_" .
-                            str_pad($start,10,"0",STR_PAD_LEFT) . "_" .
-                            str_pad($end,10,"0",STR_PAD_LEFT)
-                    ];
+                    $digits = floor(log(count($ranges), 10)) + 1;
+                    $i = 0;
+                    foreach ($ranges as $start => $end) {
+                        $i++;
+                        $part = str_pad($i, $digits, "0", STR_PAD_LEFT) . "of" . count($ranges);
+                        $dumps[] = [
+                            "table" => $table,
+                            "where" => "--where=\"$column > $start and $column <= $end\"",
+                            "create" => $start == 0 ? "" : "--skip-add-drop-table --no-create-info",
+                            "type" => "range",
+                            "last_max" => $end,
+                            "filename" => str_pad("r_" . $table, 32, "_", STR_PAD_RIGHT) .
+                                $part . "_" .
+                                str_pad($start, 10, "0", STR_PAD_LEFT) . "_" .
+                                str_pad($end, 10, "0", STR_PAD_LEFT)
+                        ];
+                    }
                 }
             }
         }
 
         # Process All Other Tables as one dump
-        $dumps[] = [
-            "table" => implode(" ", $all_tables),
-            "where" => "",
-            "create" => "",
-            "type" => "normal",
-            "filename" => "other_" . count($all_tables) . "_tables"
-        ];
+        if ($this->other_tables) {
+            $dumps[] = [
+                "table" => implode(" ", $all_tables),
+                "where" => "",
+                "create" => "",
+                "type" => "normal",
+                "filename" => "other_" . count($all_tables) . "_tables"
+            ];
+        }
 
         return $dumps;
     }
@@ -202,9 +213,11 @@ class rds
                 $this->updateIncrementalLastMax($table, $dump['last_max']);
             }
 
-            // Move the completed file to a subdir
-//            exec("mv $destination_path$dest_name $move_when_done_path$dest_name");
-//            logit("Moved $dest_name to $move_when_done_path\n", $log_file);
+            if ($this->move_dumps == 1) {
+                exec("mv " . $this->dump_working_path . $filename . ".sql.gz " .
+                    $this->dump_complete_path . $filename . ".sql.gz");
+                $this->logit("Moved $filename to $this->dump_complete_path");
+            }
 
         }
     }

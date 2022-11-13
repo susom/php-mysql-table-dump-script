@@ -16,5 +16,8 @@ other_tables = 1
 ; test mode - just list the commands
 skip_dumps = 1
 
-destination_path = ./dumps/
-move_when_done_path = ./dumps/done/
+dump_working_path = ./dumps/
+
+; move dump to complete path
+move_dumps = 1
+dump_complete_path = ./dumps/done/
