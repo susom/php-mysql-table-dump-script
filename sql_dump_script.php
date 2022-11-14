@@ -101,6 +101,10 @@ class rds
 
     private function logit($message)
     {
+        $message = str_replace(
+            [$this->password, $this->username],
+            ["xxxxxxx", "someUser"],
+            $message);
         $message = "[" . date("Y-m-d H:i:s") . "] " . $message . "\n";
         echo $message;
         file_put_contents($this->log_file, $message, FILE_APPEND);
