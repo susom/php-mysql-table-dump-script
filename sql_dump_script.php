@@ -53,7 +53,7 @@ class rds
 
         $this->log_file = $this->dump_working_path . "sql_dump.log";
         $this->increment_cache_file = $this->dump_working_path . "increment_table_cache.json";
-        $this->pid_file = $this->dump_working_path . "pid_" . getmygid();
+        $this->pid_file = $this->dump_working_path . "pid_" . getmypid();
 
         file_put_contents($this->pid_file, date("Y-m-d H:i:s"));
 
