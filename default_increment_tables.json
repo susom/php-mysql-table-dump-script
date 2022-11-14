@@ -58,10 +58,5 @@
     "column": "email_id",
     "last_max": 0,
     "bin_count": 1000000
-  },
-  "redcap_log_api_custom": {
-    "column": "log_id",
-    "last_max": 0,
-    "bin_count": 6000000
   }
 }
