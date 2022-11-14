@@ -10,11 +10,8 @@ increment_mode_min_rows = 10000
 ; do range bakcups
 range_mode = 1
 
-; do other table backups
-other_tables = 1
-
-; individual_tables left over as one per file
-individual_tables = 1
+; do other table backups, 1 = single file, 2 = individual files
+other_table_mode = 2
 
 ; test mode - just list the commands
 skip_dumps = 1

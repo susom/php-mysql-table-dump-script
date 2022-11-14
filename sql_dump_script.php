@@ -16,8 +16,7 @@ class rds
     public $increment_mode_min_rows;
     public $skip_dumps;
     public $range_mode;
-    public $other_tables;
-    public $individual_tables;
+    public $other_table_mode;
 
     public $dump_working_path;
     public $dump_complete_path;
@@ -41,8 +40,7 @@ class rds
         $this->increment_mode = $config['increment_mode'];
         $this->increment_mode_min_rows = $config['increment_mode_min_rows'];
         $this->range_mode = $config['range_mode'];
-        $this->other_tables = $config['other_tables'];
-        $this->individual_tables = $config['individual_tables'];
+        $this->other_table_mode = $config['other_table_mode'];
 
         $this->dump_working_path = $config['dump_working_path'];
         $this->dump_complete_path = $config['dump_complete_path'];
@@ -121,87 +119,84 @@ class rds
 
 
     public function getDumps() {
+        $dumps = [];
 
         $all_tables = $this->getAllTables();
-
-        $dumps = [];
+        $processed_tables = [];
 
         # Process Incremental Tables
         foreach ($this->getIncrementCache() as $table => $params) {
-            if (in_array($table, $all_tables)) {
-                unset($all_tables[$table]);
-                if ($this->increment_mode) {
-//                    $this->logit("Processing Increments");
-                    $column = $params['column'];
-                    $last_max = $params['last_max'];
-                    $bin_count = $params['bin_count'];
+            $processed_tables[] = $table;
+            if (!in_array($table, $all_tables)) continue;
+            if ($this->increment_mode)
+            {
+                $column = $params['column'];
+                $last_max = $params['last_max'];
+                $bin_count = $params['bin_count'];
 
-                    $ranges = $this->getBinValues($table, $column, $last_max, $bin_count, $this->increment_mode_min_rows);
-                    foreach ($ranges as $start => $end) {
-                        $dumps[] = [
-                            "table" => $table,
-                            "where" => "--where=\"$column > $start and $column <= $end\"",
-                            "create" => $start == 0 ? "" : "--skip-add-drop-table --no-create-info",
-                            "type" => "incremental",
-                            "last_max" => $end,
-                            "filename" => str_pad("i_" . $table, 32, "_", STR_PAD_RIGHT) .
-                                str_pad($start,10,"0",STR_PAD_LEFT) . "_" .
-                                str_pad($end,10,"0",STR_PAD_LEFT)
+                $ranges = $this->getBinValues($table, $column, $last_max, $bin_count, $this->increment_mode_min_rows);
+                foreach ($ranges as $start => $end) {
+                    $dumps[] = [
+                        "table" => $table,
+                        "where" => "--where=\"$column > $start and $column <= $end\"",
+                        "create" => $start == 0 ? "" : "--skip-add-drop-table --no-create-info",
+                        "type" => "incremental",
+                        "last_max" => $end,
+                        "filename" => str_pad("i_" . $table, 32, "_", STR_PAD_RIGHT) .
+                            str_pad($start,10,"0",STR_PAD_LEFT) . "_" .
+                            str_pad($end,10,"0",STR_PAD_LEFT)
 
-                        ];
-                    }
+                    ];
                 }
             }
         }
 
         # Process Range Tables
         foreach ($this->getRangeTables() as $table => $params) {
-            if (in_array($table, $all_tables)) {
-                unset($all_tables[$table]);
-                if ($this->range_mode) {
-                    $column = $params['column'];
-                    $bin_count = $params['bin_count'];
-                    $ranges = $this->getBinValues($table, $column, 0, $bin_count);
+            $processed_tables[] = $table;
+            if (!in_array($table, $all_tables)) continue;
+            if ($this->range_mode) {
+                $column = $params['column'];
+                $bin_count = $params['bin_count'];
+                $ranges = $this->getBinValues($table, $column, 0, $bin_count);
 
-                    $digits = floor(log(count($ranges), 10)) + 1;
-                    $i = 0;
-                    foreach ($ranges as $start => $end) {
-                        $i++;
-                        $part = str_pad($i, $digits, "0", STR_PAD_LEFT) . "of" . count($ranges);
-                        $dumps[] = [
-                            "table" => $table,
-                            "where" => "--where=\"$column > $start and $column <= $end\"",
-                            "create" => $start == 0 ? "" : "--skip-add-drop-table --no-create-info",
-                            "type" => "range",
-                            "last_max" => $end,
-                            "filename" => str_pad("r_" . $table, 32, "_", STR_PAD_RIGHT) .
-                                $part . "_" .
-                                str_pad($start, 10, "0", STR_PAD_LEFT) . "_" .
-                                str_pad($end, 10, "0", STR_PAD_LEFT)
-                        ];
-                    }
+                $digits = floor(log(count($ranges), 10)) + 1;
+                $i = 0;
+                foreach ($ranges as $start => $end) {
+                    $i++;
+                    $part = str_pad($i, $digits, "0", STR_PAD_LEFT) . "of" . count($ranges);
+                    $dumps[] = [
+                        "table" => $table,
+                        "where" => "--where=\"$column > $start and $column <= $end\"",
+                        "create" => $start == 0 ? "" : "--skip-add-drop-table --no-create-info",
+                        "type" => "range",
+                        "last_max" => $end,
+                        "filename" => str_pad("r_" . $table, 32, "_", STR_PAD_RIGHT) .
+                            $part . "_" .
+                            str_pad($start, 10, "0", STR_PAD_LEFT) . "_" .
+                            str_pad($end, 10, "0", STR_PAD_LEFT)
+                    ];
                 }
             }
         }
 
-        var_dump($all_tables);
+        $other_tables = array_diff($all_tables, $processed_tables);
 
         # Process All Other Tables as one dump
-        var_dump($this->other_tables);
-        if ($this->other_tables == "1") {
+        if ($this->other_table_mode == "1") {
             $dumps[] = [
-                "table" => implode(" ", $all_tables),
+                "table" => implode(" ", $other_tables),
                 "where" => "",
                 "create" => "",
                 "type" => "normal",
-                "filename" => "all_other_" . count($all_tables) . "_tables"
+                "filename" => "all_other_" . count($other_tables) . "_tables"
             ];
         }
 
         # Do other tables individually
-        if ($this->individual_tables)
+        if ($this->other_table_mode == "2")
         {
-            foreach($all_tables as $table)
+            foreach($other_tables as $table)
             {
                 $dumps[] = [
                     "table" => $table,
