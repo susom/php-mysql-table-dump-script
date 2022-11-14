@@ -98,6 +98,7 @@ class rds
     private function saveIncrementCache($cache)
     {
         file_put_contents($this->increment_cache_file, json_encode($cache));
+        $this->increment_cache = $cache;
     }
 
     private function logit($message)
@@ -195,7 +196,7 @@ class rds
         }
 
         # Do other tables individually
-        if ($this->individual_tables == 1)
+        if ($this->individual_tables)
         {
             foreach($all_tables as $table)
             {
@@ -209,7 +210,7 @@ class rds
             }
         }
 
-        $this->logit("DUMPS\n" . implode("\n",$dumps));
+        // $this->logit("DUMPS\n" . json_encode($dumps));
 
         return $dumps;
     }
@@ -225,20 +226,19 @@ class rds
                 "$create $this->database $table | gzip > $this->dump_working_path" . "$filename" . ".sql.gz";
 
             $this->logit("[COMMAND]: $command");
-            if ($this->skip_dumps !== 1) {
+            if (! $this->skip_dumps) {
                 exec($command);
-            }
 
-            if ($dump['type'] == "incremental") {
-                $this->updateIncrementalLastMax($table, $dump['last_max']);
-            }
+                if ($dump['type'] == "incremental") {
+                    $this->updateIncrementalLastMax($table, $dump['last_max']);
+                }
 
-            if ($this->move_dumps == 1) {
-                exec("mv " . $this->dump_working_path . $filename . ".sql.gz " .
-                    $this->dump_complete_path . $filename . ".sql.gz");
-                $this->logit("Moved $filename to $this->dump_complete_path");
+                if ($this->move_dumps == 1) {
+                    exec("mv " . $this->dump_working_path . $filename . ".sql.gz " .
+                        $this->dump_complete_path . $filename . ".sql.gz");
+                    $this->logit("Moved $filename to $this->dump_complete_path");
+                }
             }
-
         }
     }
 
