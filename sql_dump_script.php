@@ -146,7 +146,7 @@ class rds
                         "create" => $start == 0 ? "" : "--skip-add-drop-table --no-create-info",
                         "type" => "incremental",
                         "last_max" => $end,
-                        "filename" => str_pad("i_" . $table, 32, "_", STR_PAD_RIGHT) .
+                        "filename" => str_pad("i_" . $table, 39, "_", STR_PAD_RIGHT) .
                             str_pad($start,10,"0",STR_PAD_LEFT) . "_" .
                             str_pad($end,10,"0",STR_PAD_LEFT)
 
@@ -164,7 +164,7 @@ class rds
                 $bin_count = $params['bin_count'];
                 $ranges = $this->getBinValues($table, $column, 0, $bin_count);
 
-                $digits = floor(log(count($ranges), 10)) + 1;
+                $digits= 3; // = floor(log(count($ranges), 10)) + 1;
                 $i = 0;
                 foreach ($ranges as $start => $end) {
                     $i++;
