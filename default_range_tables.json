@@ -5,7 +5,7 @@
   },
   "redcap_metadata_archive": {
     "column": "project_id",
-    "bin_count": 3000000
+    "bin_count": 5000000
   },
   "redcap_metadata": {
     "column": "project_id",
@@ -21,6 +21,6 @@
   },
   "redcap_surveys_response": {
     "column": "response_id",
-    "bin_count": 3000000
+    "bin_count": 5000000
   }
 }
