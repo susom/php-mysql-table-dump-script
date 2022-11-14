@@ -184,6 +184,8 @@ class rds
             }
         }
 
+        var_dump($all_tables);
+
         # Process All Other Tables as one dump
         var_dump($this->other_tables);
         if ($this->other_tables == "1") {
