@@ -17,6 +17,7 @@ class rds
     public $skip_dumps;
     public $range_mode;
     public $other_tables;
+    public $individual_tables;
 
     public $dump_working_path;
     public $dump_complete_path;
@@ -41,6 +42,7 @@ class rds
         $this->increment_mode_min_rows = $config['increment_mode_min_rows'];
         $this->range_mode = $config['range_mode'];
         $this->other_tables = $config['other_tables'];
+        $this->individual_tables = $config['individual_tables'];
 
         $this->dump_working_path = $config['dump_working_path'];
         $this->dump_complete_path = $config['dump_complete_path'];
@@ -190,6 +192,21 @@ class rds
                 "type" => "normal",
                 "filename" => "all_other_" . count($all_tables) . "_tables"
             ];
+        }
+
+        # Do other tables individually
+        if ($this->individual_tables == 1)
+        {
+            foreach($all_tables as $table)
+            {
+                $dumps[] = [
+                    "table" => implode(" ", $all_tables),
+                    "where" => "",
+                    "create" => "",
+                    "type" => "normal",
+                    "filename" => "s_" . $table
+                ];
+            }
         }
 
         $this->logit("DUMPS\n" . implode("\n",$dumps));
