@@ -185,7 +185,8 @@ class rds
         }
 
         # Process All Other Tables as one dump
-        if ($this->other_tables) {
+        var_dump($this->other_tables);
+        if ($this->other_tables == "1") {
             $dumps[] = [
                 "table" => implode(" ", $all_tables),
                 "where" => "",
