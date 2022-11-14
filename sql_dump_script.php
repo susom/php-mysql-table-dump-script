@@ -202,7 +202,7 @@ class rds
             foreach($all_tables as $table)
             {
                 $dumps[] = [
-                    "table" => implode(" ", $all_tables),
+                    "table" => $table,
                     "where" => "",
                     "create" => "",
                     "type" => "normal",
