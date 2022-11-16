@@ -1,0 +1,42 @@
+{
+  "em_user_project_sessions": {
+    "column": "id",
+    "bin_count": 5000000
+  },
+  "redcap_alerts_sent_log": {
+    "column": "alert_sent_log_id",
+    "bin_count": 3000000
+  },
+  "redcap_data": {
+    "column": "project_id",
+    "bin_count": 30000000
+  },
+  "redcap_log_api_allowlist": {
+    "column": "log_id",
+    "bin_count": 10000000
+  },
+  "redcap_edocs_metadata": {
+    "column": "doc_id",
+    "bin_count": 5000000
+  },
+  "redcap_metadata": {
+    "column": "project_id",
+    "bin_count": 3000000
+  },
+  "redcap_metadata_archive": {
+    "column": "project_id",
+    "bin_count": 5000000
+  },
+  "redcap_surveys_emails": {
+    "column": "email_id",
+    "bin_count": 10000000
+  },
+  "redcap_surveys_participants": {
+    "column": "participant_id",
+    "bin_count": 10000000
+  },
+  "redcap_surveys_response": {
+    "column": "response_id",
+    "bin_count": 5000000
+  }
+}

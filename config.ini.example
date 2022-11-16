@@ -2,7 +2,22 @@ username = root
 database = redcap
 password = root
 hostname = db
-increment_only = 1
-min_rows_for_increment = 1000
-destination_path = ./dumps/
-move_when_done_path = ./dumps/done/
+
+; do incremental backups
+increment_mode = 1
+increment_mode_min_rows = 10000
+
+; do range bakcups
+range_mode = 1
+
+; do other table backups, 1 = single file, 2 = individual files
+other_table_mode = 2
+
+; test mode - just list the commands
+skip_dumps = 1
+
+dump_working_path = ./dumps/
+
+; move dump to complete path
+move_dumps = 1
+dump_complete_path = ./dumps/done/
