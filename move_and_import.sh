@@ -6,9 +6,9 @@
 # assumes /PROD_TABLE_BACKUP is mounted to the google container and you are running this in the /PROD_TABLE_BACKUP/dump_complete folder
 
 BUCKET=redcap_dev_sql_dumps
-INSTANCE=redcap-dev-mysql
-DESTDB=test2
-BUCKETFOLDER=test2
+INSTANCE=redcap-mysql
+DESTDB=redcap_andy
+BUCKETFOLDER=redcap_andy_import
 OUTPUTFILE=$(date "+%Y-%m-%d_%H%M")_import.log
 
 echo "----------------------------"
@@ -33,15 +33,15 @@ do
       mv "$filename" "done/$filename"
       # start importing the file
       # check that no active processes are running before beginning import
-      RUNNING_PROCESS_NAME=$(gcloud sql operations list --instance=redcap-dev-mysql | grep "RUNNING" | cut -d' ' -f1)
+      RUNNING_PROCESS_NAME=$(gcloud sql operations list --instance=${INSTANCE} | grep "RUNNING" | cut -d' ' -f1)
       until [[ -z "$RUNNING_PROCESS_NAME" ]]; do
          # we have a running process -- we must wait for it
          echo "$(date -u) [$i] $filename: process $RUNNING_PROCESS_NAME still running - waiting to complete..." | tee -a $OUTPUTFILE
          gcloud sql operations wait "$RUNNING_PROCESS_NAME" --timeout=30 --verbosity="critical" 2>&1 | tee -a $OUTPUTFILE
-         RUNNING_PROCESS_NAME=$(gcloud sql operations list --instance=redcap-dev-mysql | grep "RUNNING" | cut -d' ' -f1)
+         RUNNING_PROCESS_NAME=$(gcloud sql operations list --instance=${INSTANCE} | grep "RUNNING" | cut -d' ' -f1)
       done
       echo "$(date -u) [$i] $filename: Starting Import into $INSTANCE $DESTDB" | tee -a $OUTPUTFILE
-      RESULT=$(gcloud sql import sql $INSTANCE "gs://$BUCKET/$BUCKETFOLDER/$filename" --database=$DESTDB --quiet 2>&1)
+      RESULT=$(gcloud sql import sql $INSTANCE "gs://$BUCKET/$BUCKETFOLDER/$filename" --database=$DESTDB --timeout=1800 --quiet 2>&1)
       echo "$RESULT" | tee -a $OUTPUTFILE
       if [[ $RESULT == *"longer than expected"* ]]; then
         echo "$(date -u) [$i] $filename: Timeout" | tee -a $OUTPUTFILE
