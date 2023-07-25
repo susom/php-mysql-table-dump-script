@@ -41,18 +41,24 @@ do
          RUNNING_PROCESS_NAME=$(gcloud sql operations list --instance=${INSTANCE} | grep "RUNNING" | cut -d' ' -f1)
       done
       echo "$(date -u) [$i] $filename: Starting Import into $INSTANCE $DESTDB" | tee -a $OUTPUTFILE
-      RESULT=$(gcloud sql import sql $INSTANCE "gs://$BUCKET/$BUCKETFOLDER/$filename" --database=$DESTDB --quiet 2>&1)
-      echo "$RESULT" | tee -a $OUTPUTFILE
-      if [[ $RESULT == *"longer than expected"* ]]; then
-        echo "$(date -u) [$i] $filename: Timeout" | tee -a $OUTPUTFILE
-        sleep 5
-      elif [[ $RESULT == *"in progress"* ]]; then
-        echo "$(date -u) [$i] $filename: Another operation in progress" | tee -a $OUTPUTFILE
-        sleep 5
-      elif [[ $RESULT == *"ERROR"* ]]; then
-        echo "Unknown error" | tee -a $OUTPUTFILE
-        sleep 60
-      fi
+      while true; do
+        RESULT=$(gcloud sql import sql $INSTANCE "gs://$BUCKET/$BUCKETFOLDER/$filename" --database=$DESTDB --quiet 2>&1)
+        echo "$RESULT" | tee -a $OUTPUTFILE
+        if [[ $RESULT == *"longer than expected"* ]]; then
+            echo "$(date -u) [$i] $filename: Timeout" | tee -a $OUTPUTFILE
+            sleep 5
+          elif [[ $RESULT == *"in progress"* ]]; then
+            echo "$(date -u) [$i] $filename: Another operation in progress - waiting 10 sec to try again" | tee -a $OUTPUTFILE
+            sleep 10
+          elif [[ $RESULT == *"ERROR"* ]]; then
+            echo "Unknown error" | tee -a $OUTPUTFILE
+            sleep 60
+            break;
+          else
+            # assume success
+            break;
+        fi
+      done
       echo "---------------------------------" | tee -a $OUTPUTFILE
       # take a breath
       sleep 2
