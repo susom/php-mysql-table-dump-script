@@ -42,7 +42,10 @@ do
         echo "$RESULT" | tee -a $OUTPUTFILE
         if [[ $RESULT == *"longer than expected"* ]]; then
             echo "$(date -u) [$i] $filename: Timeout" | tee -a $OUTPUTFILE
-            sleep 5
+	    RUNNING_PROCESS_NAME=$(gcloud sql operations list --instance=${INSTANCE} | grep "RUNNING" | cut -d' ' -f1)
+	    echo "$(date -u) [$i] $filename: Import process $RUNNING_PROCESS_NAME still running - waiting to complete..." | tee -a $OUTPUTFILE
+            gcloud sql operations wait "$RUNNING_PROCESS_NAME" --timeout=1800 --verbosity="critical" 2>&1 | tee -a $OUTPUTFILE	
+            sleep 10
           elif [[ $RESULT == *"in progress"* ]]; then
             echo "$(date -u) [$i] $filename: Another operation in progress - waiting 10 sec to try again" | tee -a $OUTPUTFILE
             sleep 10
