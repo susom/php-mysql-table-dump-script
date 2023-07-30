@@ -12,7 +12,7 @@ echo $(date -u) STARTING : PID $$ | tee -a $OUTPUTFILE
 
 
 function getRunningProcess() {
-  PROCESS=$(gcloud sql operations list --instance=${INSTANCE} | grep "RUNNING" | cut -d' ' -f1)
+  PROCESS=$(gcloud sql operations list --instance=${INSTANCE} --filter="status:RUNNING" | grep -Ewo '[[:xdigit:]]{8}(-[[:xdigit:]]{4}){3}-[[:xdigit:]]{12}')
   echo "DEBUG: RUNNING PROCESS = $PROCESS" | tee -a $OUTPUTFILE
 }
 
