@@ -7,8 +7,8 @@
 
 source move_and_import_config.sh
 
-echo "----------------------------"
-echo $(date -u) STARTING
+echo "----------------------------" | tee -a $OUTPUTFILE
+echo $(date -u) STARTING : PID $$ | tee -a $OUTPUTFILE
 
 
 function waitForProcess() {
@@ -18,7 +18,7 @@ function waitForProcess() {
     return 1
   else
     gcloud sql operations wait "$PROCESS_NAME" --timeout=7200 --verbosity="critical" 2>&1 | tee -a $OUTPUTFILE
-    return waitForProcess
+    waitForProcess
   fi
 }
 
