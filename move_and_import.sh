@@ -13,39 +13,40 @@ echo $(date -u) STARTING : PID $$ | tee -a $OUTPUTFILE
 
 function getRunningProcess() {
   PROCESS=$(gcloud sql operations list --instance=${INSTANCE} --filter="status:RUNNING" | grep -Ewo '[[:xdigit:]]{8}(-[[:xdigit:]]{4}){3}-[[:xdigit:]]{12}')
-  echo "DEBUG: RUNNING PROCESS = $PROCESS" | tee -a $OUTPUTFILE
+  echo "DEBUG: RUNNING PROCESS: $PROCESS" | tee -a $OUTPUTFILE
 }
 
 function waitForProcess() {
   if [[ -z "$PROCESS" ]]; then
     # NOTHING TO WAIT FOR
-    echo "DEBUG: No Process to Wait For $PROCESS" | tee -a $OUTPUTFILE
+    echo "DEBUG: No Process to Wait For" | tee -a $OUTPUTFILE
   else
     echo "DEBUG: Starting WaitForProcess $PROCESS" | tee -a $OUTPUTFILE
     #PROCESS_RESULT=$(gcloud sql operations wait "$PROCESS" --timeout=unlimited --verbosity="critical" 2>&1)
     PROCESS_RESULT=$(gcloud sql operations wait "$PROCESS" --timeout=unlimited 2>&1)
     echo "DEBUG: waitForProcess PROCESS_RESULT: $PROCESS_RESULT" | tee -a $OUTPUTFILE
+#    sleep 5
   fi
 }
 
 function importBucket() {
-  echo "$(date -u) [$filename] Starting Import into $INSTANCE $DESTDB" | tee -a $OUTPUTFILE
+  echo "$(date -u) [$filename] Importing into $INSTANCE $DESTDB" | tee -a $OUTPUTFILE
   IMPORT_RESULT=$(gcloud sql import sql $INSTANCE "gs://$BUCKET/$BUCKETFOLDER/$filename" --database=$DESTDB --async --quiet 2>&1)
-  echo "[RESULT]: $IMPORT_RESULT" | tee -a $OUTPUTFILE
+#  echo "[RESULT]: $IMPORT_RESULT" | tee -a $OUTPUTFILE
 
   # parse out job id:
   #PROCESS=$(echo $IMPORT_RESULT | rev | cut -d "/" -f1 | rev)
   PROCESS=$(echo $IMPORT_RESULT | grep -Ewo '[[:xdigit:]]{8}(-[[:xdigit:]]{4}){3}-[[:xdigit:]]{12}')
 
-  echo "[PROCESS]: $PROCESS" | tee -a $OUTPUTFILE
+#  echo "[PROCESS]: $PROCESS" | tee -a $OUTPUTFILE
 
   if [[ -z "$PROCESS" ]]; then
     # PROCESS NOT FOUND:
-    echo "DEBUG: Unable to parse PROCESS from IMPORT_RESULT" | tee -a $OUTPUTFILE
+    echo "DEBUG: Unable to parse PROCESS from IMPORT_RESULT: $IMPORT_RESULT" | tee -a $OUTPUTFILE
     getRunningProcess
-    echo "DEBUG: PROCESS $PROCESS is running" | tee -a $OUTPUTFILE
+#    echo "DEBUG: PROCESS $PROCESS is running" | tee -a $OUTPUTFILE
     waitForProcess
-    echo "DEBUG: PROCESS $PROCESS is done" | tee -a $OUTPUTFILE
+#    echo "DEBUG: PROCESS $PROCESS is done" | tee -a $OUTPUTFILE
     return 0
   else
     # PROCESS FOUND
