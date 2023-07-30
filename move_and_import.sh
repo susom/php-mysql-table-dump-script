@@ -28,7 +28,7 @@ function waitForProcess() {
 
 function importBucket() {
   echo "$(date -u) [$filename] Starting Import into $INSTANCE $DESTDB" | tee -a $OUTPUTFILE
-  RESULT=$(gcloud sql import sql $INSTANCE "gs://$BUCKET/$BUCKETFOLDER/$filename" --database=$DESTDB --quiet 2>&1)
+  RESULT=$(gcloud sql import sql $INSTANCE "gs://$BUCKET/$BUCKETFOLDER/$filename" --database=$DESTDB --async --quiet 2>&1)
   echo "[RESULT]: $RESULT" | tee -a $OUTPUTFILE
   if [[ $RESULT == "Imported data"* ]]; then
     #success
@@ -69,9 +69,9 @@ do
 
     #step 2: try import it
     # check that no active processes are running before beginning import
-    echo "DEBUG: About to wait" | tee -a $OUTPUTFILE
+#    echo "DEBUG: About to wait" | tee -a $OUTPUTFILE
     waitForProcess
-    echo "DEBUG: Done wait" | tee -a $OUTPUTFILE
+#    echo "DEBUG: Done wait" | tee -a $OUTPUTFILE
 
     if importBucket; then
       #success
