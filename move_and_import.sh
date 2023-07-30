@@ -11,45 +11,62 @@ echo "----------------------------" | tee -a $OUTPUTFILE
 echo $(date -u) STARTING : PID $$ | tee -a $OUTPUTFILE
 
 
-function waitForProcess() {
-  echo "DEBUG: Starting WaitForProcess" | tee -a $OUTPUTFILE
+function getRunningProcess() {
+  PROCESS=$(gcloud sql operations list --instance=${INSTANCE} | grep "RUNNING" | cut -d' ' -f1)
+  echo "DEBUG: RUNNING PROCESS = $PROCESS" | tee -a $OUTPUTFILE
+}
 
-  RUNNING_PROCESS_NAME=$(gcloud sql operations list --instance=${INSTANCE} | grep "RUNNING" | cut -d' ' -f1)
-  if [[ -z "$RUNNING_PROCESS_NAME" ]]; then
-    # Nothing running -- go ahead
-    return 1
-  else
-    echo "DEBUG: $RUNNING_PROCESS_NAME running.. going to wait" | tee -a $OUTPUTFILE
-    gcloud sql operations wait "$PROCESS_NAME" --timeout=unlimited --verbosity="critical" 2>&1 | tee -a $OUTPUTFILE
-    waitForProcess
+function waitForProcess() {
+  if [[ -z "$PROCESS" ]]; then
+    echo "DEBUG: Starting WaitForProcess $PROCESS" | tee -a $OUTPUTFILE
+    PROCESS_RESULT=gcloud sql operations wait "$PROCESS" --timeout=unlimited --verbosity="critical" 2>&1 | tee -a $OUTPUTFILE
+    echo "DEBUG: waitForProcess RESULT: $PROCESS_RESULT" | tee -a $OUTPUTFILE
   fi
 }
 
-
 function importBucket() {
   echo "$(date -u) [$filename] Starting Import into $INSTANCE $DESTDB" | tee -a $OUTPUTFILE
-  RESULT=$(gcloud sql import sql $INSTANCE "gs://$BUCKET/$BUCKETFOLDER/$filename" --database=$DESTDB --async --quiet 2>&1)
-  echo "[RESULT]: $RESULT" | tee -a $OUTPUTFILE
-  if [[ $RESULT == "Imported data"* ]]; then
-    #success
+  IMPORT_RESULT=$(gcloud sql import sql $INSTANCE "gs://$BUCKET/$BUCKETFOLDER/$filename" --database=$DESTDB --async --quiet 2>&1)
+  echo "[RESULT]: $IMPORT_RESULT" | tee -a $OUTPUTFILE
+
+  # parse out job id:
+  PROCESS=$(echo $IMPORT_RESULT | rev | cut -d "/" -f1 | rev)
+  echo "[PROCESS]: $PROCESS" | tee -a $OUTPUTFILE
+
+  if [[ -z "$PROCESS" ]]; then
+    # PROCESS FOUND:
+    waitForProcess
+    # TODO: handle errors here?
     return 1
-  elif [[ $RESULT == *"longer than expected"* ]]; then
-    # hasn't finished
-    echo "DEBUG: Longer than expected" | tee -a $OUTPUTFILE
-    waitForProcess
-    # assume we end with success
-  elif [[ $RESULT == *"in progress"* ]]; then
-    echo "DEBUG: in_progress" | tee -a $OUTPUTFILE
-    echo "$(date -u) [$filename] Another operation in progress..." | tee -a $OUTPUTFILE
-    waitForProcess
-    importBucket
-  elif [[ $RESULT == *"ERROR"* ]]; then
-    echo "Unknown error" | tee -a $OUTPUTFILE
-    return 0;
   else
-    echo "Unknown response - $RESULT" | tee -a $OUTPUTFILE
-    return 0;
+    echo "DEBUG: Unable to parse PROCESS from IMPORT_RESULT" | tee -a $OUTPUTFILE
+    getRunningProcess
+    echo "DEBUG: PROCESS $PROCESS is running" | tee -a $OUTPUTFILE
+    waitForProcess
+    echo "DEBUG: PROCESS $PROCESS is done" | tee -a $OUTPUTFILE
+    return 0
   fi
+#  if [[ $RESULT == "Imported data"* ]]; then
+#    #success
+#    return 1
+#  elif [[ $RESULT == *"longer than expected"* ]]; then
+#    # hasn't finished
+#    echo "DEBUG: Longer than expected" | tee -a $OUTPUTFILE
+#    waitForProcess
+#    # assume we end with success
+#  elif [[ $RESULT == *"in progress"* ]]; then
+#    echo "DEBUG: in_progress" | tee -a $OUTPUTFILE
+#    echo "$(date -u) [$filename] Another operation in progress..." | tee -a $OUTPUTFILE
+#    waitForProcess
+#    importBucket
+#  elif [[ $RESULT == *"ERROR"* ]]; then
+#    echo "Unknown error" | tee -a $OUTPUTFILE
+#    return 0;
+#  else
+#    echo "Unknown response - $RESULT" | tee -a $OUTPUTFILE
+#    return 0;
+#  fi
+
 }
 
 while true
@@ -68,10 +85,10 @@ do
     gsutil -o GSUtil:parallel_composite_upload_threshold=150M cp $filename gs://$BUCKET/$BUCKETFOLDER/$filename
 
     #step 2: try import it
-    # check that no active processes are running before beginning import
-#    echo "DEBUG: About to wait" | tee -a $OUTPUTFILE
-    waitForProcess
-#    echo "DEBUG: Done wait" | tee -a $OUTPUTFILE
+#    # check that no active processes are running before beginning import
+##    echo "DEBUG: About to wait" | tee -a $OUTPUTFILE
+#    waitForProcess
+##    echo "DEBUG: Done wait" | tee -a $OUTPUTFILE
 
     if importBucket; then
       #success
@@ -86,6 +103,7 @@ do
       #error
       echo "Error importing $filename" | tee -a $OUTPUTFILE
       mv "$filename" "error/$filename"
+      exit
     fi
     # take a breath
     sleep 1
