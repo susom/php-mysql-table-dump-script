@@ -18,6 +18,9 @@ function getRunningProcess() {
 
 function waitForProcess() {
   if [[ -z "$PROCESS" ]]; then
+    # NOTHING TO WAIT FOR
+    echo "DEBUG: No Process to Wait For $PROCESS" | tee -a $OUTPUTFILE
+  else
     echo "DEBUG: Starting WaitForProcess $PROCESS" | tee -a $OUTPUTFILE
     PROCESS_RESULT=gcloud sql operations wait "$PROCESS" --timeout=unlimited --verbosity="critical" 2>&1 | tee -a $OUTPUTFILE
     echo "DEBUG: waitForProcess PROCESS_RESULT: $PROCESS_RESULT" | tee -a $OUTPUTFILE
@@ -45,6 +48,7 @@ function importBucket() {
     return 0
   else
     # PROCESS FOUND
+
     waitForProcess
     # TODO: handle errors here?
     return 1
