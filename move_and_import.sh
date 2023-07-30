@@ -22,7 +22,8 @@ function waitForProcess() {
     echo "DEBUG: No Process to Wait For $PROCESS" | tee -a $OUTPUTFILE
   else
     echo "DEBUG: Starting WaitForProcess $PROCESS" | tee -a $OUTPUTFILE
-    PROCESS_RESULT=$(gcloud sql operations wait "$PROCESS" --timeout=unlimited --verbosity="critical" 2>&1)
+    #PROCESS_RESULT=$(gcloud sql operations wait "$PROCESS" --timeout=unlimited --verbosity="critical" 2>&1)
+    PROCESS_RESULT=$(gcloud sql operations wait "$PROCESS" --timeout=unlimited 2>&1)
     echo "DEBUG: waitForProcess PROCESS_RESULT: $PROCESS_RESULT" | tee -a $OUTPUTFILE
   fi
 }
@@ -91,7 +92,10 @@ do
     echo "$(date -u) [$filename] (1 of $cnt) Copying to $BUCKET/$BUCKETFOLDER" | tee -a $OUTPUTFILE
     gsutil -o GSUtil:parallel_composite_upload_threshold=150M cp $filename gs://$BUCKET/$BUCKETFOLDER/$filename
 
-    if importBucket; then
+    importBucket
+    importBucketResult=$?
+
+    if [[ $importBucketResult -eq 1 ]]; then
       #success
       # rename local file by appending a done suffix
       # start importing the file
