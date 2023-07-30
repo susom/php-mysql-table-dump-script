@@ -22,7 +22,7 @@ function waitForProcess() {
     echo "DEBUG: No Process to Wait For $PROCESS" | tee -a $OUTPUTFILE
   else
     echo "DEBUG: Starting WaitForProcess $PROCESS" | tee -a $OUTPUTFILE
-    PROCESS_RESULT=gcloud sql operations wait "$PROCESS" --timeout=unlimited --verbosity="critical" 2>&1 | tee -a $OUTPUTFILE
+    PROCESS_RESULT=$(gcloud sql operations wait "$PROCESS" --timeout=unlimited --verbosity="critical" 2>&1)
     echo "DEBUG: waitForProcess PROCESS_RESULT: $PROCESS_RESULT" | tee -a $OUTPUTFILE
   fi
 }
