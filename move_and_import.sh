@@ -34,17 +34,18 @@ function importBucket() {
   echo "[PROCESS]: $PROCESS" | tee -a $OUTPUTFILE
 
   if [[ -z "$PROCESS" ]]; then
-    # PROCESS FOUND:
-    waitForProcess
-    # TODO: handle errors here?
-    return 1
-  else
+    # PROCESS NOT FOUND:
     echo "DEBUG: Unable to parse PROCESS from IMPORT_RESULT" | tee -a $OUTPUTFILE
     getRunningProcess
     echo "DEBUG: PROCESS $PROCESS is running" | tee -a $OUTPUTFILE
     waitForProcess
     echo "DEBUG: PROCESS $PROCESS is done" | tee -a $OUTPUTFILE
     return 0
+  else
+    # PROCESS FOUND
+    waitForProcess
+    # TODO: handle errors here?
+    return 1
   fi
 #  if [[ $RESULT == "Imported data"* ]]; then
 #    #success
