@@ -91,7 +91,8 @@ do
 
     #step 1: copy file to bucket
     echo "$(date -u) [$filename] ($cnt in queue) Copying to $BUCKET/$BUCKETFOLDER" | tee -a $OUTPUTFILE
-    gsutil -o GSUtil:parallel_composite_upload_threshold=150M cp $filename gs://$BUCKET/$BUCKETFOLDER/$filename
+    gsutil -q -o GSUtil:parallel_composite_upload_threshold=150M cp $filename gs://$BUCKET/$BUCKETFOLDER/$filename
+    echo
 
     importBucket
     importBucketResult=$?
