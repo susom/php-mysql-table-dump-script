@@ -140,17 +140,20 @@ class rds
 
                 $ranges = $this->getBinValues($table, $column, $last_max, $bin_count, $this->increment_mode_min_rows);
                 foreach ($ranges as $start => $end) {
-                    $dumps[] = [
-                        "table" => $table,
-                        "where" => "--where=\"$column > $start and $column <= $end\"",
-                        "create" => $start == 0 ? "" : "--skip-add-drop-table --no-create-info",
-                        "type" => "incremental",
-                        "last_max" => $end,
-                        "filename" => str_pad("i_" . $table, 39, "_", STR_PAD_RIGHT) .
-                            str_pad($start,10,"0",STR_PAD_LEFT) . "_" .
-                            str_pad($end,10,"0",STR_PAD_LEFT)
+                    # Only dump if there is a new increment
+                    if ($end > $start) {
+                        $dumps[] = [
+                            "table" => $table,
+                            "where" => "--where=\"$column > $start and $column <= $end\"",
+                            "create" => $start == 0 ? "" : "--skip-add-drop-table --no-create-info",
+                            "type" => "incremental",
+                            "last_max" => $end,
+                            "filename" => str_pad("i_" . $table, 39, "_", STR_PAD_RIGHT) .
+                                str_pad($start,10,"0",STR_PAD_LEFT) . "_" .
+                                str_pad($end,10,"0",STR_PAD_LEFT)
 
-                    ];
+                        ];
+                    }
                 }
             }
         }
