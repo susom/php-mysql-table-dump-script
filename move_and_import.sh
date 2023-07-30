@@ -19,12 +19,12 @@ function getRunningProcess() {
 function waitForProcess() {
   if [[ -z "$PROCESS" ]]; then
     # NOTHING TO WAIT FOR
-    echo "DEBUG: No Process to Wait For" | tee -a $OUTPUTFILE
+    echo "DEBUG: No Process GUID Defined" | tee -a $OUTPUTFILE
   else
-    echo "DEBUG: Starting WaitForProcess $PROCESS" | tee -a $OUTPUTFILE
+    echo "$(date -u) Waiting for $PROCESS to complete" | tee -a $OUTPUTFILE
     #PROCESS_RESULT=$(gcloud sql operations wait "$PROCESS" --timeout=unlimited --verbosity="critical" 2>&1)
     PROCESS_RESULT=$(gcloud sql operations wait "$PROCESS" --timeout=unlimited 2>&1)
-    echo "DEBUG: waitForProcess PROCESS_RESULT: $PROCESS_RESULT" | tee -a $OUTPUTFILE
+    echo "$(date -u) $PROCESS_RESULT" | tee -a $OUTPUTFILE
 #    sleep 5
   fi
 }
@@ -90,7 +90,7 @@ do
     filename=$(ls | grep .sql.gz$ | head -n 1)
 
     #step 1: copy file to bucket
-    echo "$(date -u) [$filename] (1 of $cnt) Copying to $BUCKET/$BUCKETFOLDER" | tee -a $OUTPUTFILE
+    echo "$(date -u) [$filename] ($cnt in queue) Copying to $BUCKET/$BUCKETFOLDER" | tee -a $OUTPUTFILE
     gsutil -o GSUtil:parallel_composite_upload_threshold=150M cp $filename gs://$BUCKET/$BUCKETFOLDER/$filename
 
     importBucket
@@ -98,16 +98,11 @@ do
 
     if [[ $importBucketResult -eq 1 ]]; then
       #success
-      # rename local file by appending a done suffix
-      # start importing the file
-      echo "Finished $filename moving to done" | tee -a $OUTPUTFILE
-#      echo "Filename: $filename"
-#      echo "DEST: done/$filename"
-#      echo "PWD: $(pwd)"
+      echo "$(date -u) [$filename] Done!" | tee -a $OUTPUTFILE
       mv "$filename" "done/$filename"
     else
       #error
-      echo "Error importing $filename" | tee -a $OUTPUTFILE
+      echo "ERROR importing $filename - MOVED TO error DIRECTORY" | tee -a $OUTPUTFILE
       mv "$filename" "error/$filename"
       exit
     fi
