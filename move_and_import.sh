@@ -12,12 +12,15 @@ echo $(date -u) STARTING : PID $$ | tee -a $OUTPUTFILE
 
 
 function waitForProcess() {
+  echo "DEBUG: Starting WaitForProcess" | tee -a $OUTPUTFILE
+
   RUNNING_PROCESS_NAME=$(gcloud sql operations list --instance=${INSTANCE} | grep "RUNNING" | cut -d' ' -f1)
   if [[ -z "$RUNNING_PROCESS_NAME" ]]; then
     # Nothing running -- go ahead
     return 1
   else
-    gcloud sql operations wait "$PROCESS_NAME" --timeout=7200 --verbosity="critical" 2>&1 | tee -a $OUTPUTFILE
+    echo "DEBUG: $RUNNING_PROCESS_NAME running.. going to wait" | tee -a $OUTPUTFILE
+    gcloud sql operations wait "$PROCESS_NAME" --timeout=unlimited --verbosity="critical" 2>&1 | tee -a $OUTPUTFILE
     waitForProcess
   fi
 }
@@ -26,15 +29,17 @@ function waitForProcess() {
 function importBucket() {
   echo "$(date -u) [$filename] Starting Import into $INSTANCE $DESTDB" | tee -a $OUTPUTFILE
   RESULT=$(gcloud sql import sql $INSTANCE "gs://$BUCKET/$BUCKETFOLDER/$filename" --database=$DESTDB --quiet 2>&1)
-  echo "$RESULT" | tee -a $OUTPUTFILE
+  echo "[RESULT]: $RESULT" | tee -a $OUTPUTFILE
   if [[ $RESULT == "Imported data"* ]]; then
     #success
     return 1
   elif [[ $RESULT == *"longer than expected"* ]]; then
     # hasn't finished
+    echo "DEBUG: Longer than expected" | tee -a $OUTPUTFILE
     waitForProcess
     # assume we end with success
   elif [[ $RESULT == *"in progress"* ]]; then
+    echo "DEBUG: in_progress" | tee -a $OUTPUTFILE
     echo "$(date -u) [$filename] Another operation in progress..." | tee -a $OUTPUTFILE
     waitForProcess
     importBucket
@@ -73,9 +78,9 @@ do
       # rename local file by appending a done suffix
       # start importing the file
       echo "Finished $filename moving to done" | tee -a $OUTPUTFILE
-      echo "Filename: $filename"
-      echo "DEST: done/$filename"
-      echo "PWD: $(pwd)"
+#      echo "Filename: $filename"
+#      echo "DEST: done/$filename"
+#      echo "PWD: $(pwd)"
       mv "$filename" "done/$filename"
     else
       #error
