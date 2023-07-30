@@ -2,47 +2,47 @@
   "redcap_log_event": {
     "column": "log_event_id",
     "last_max": 0,
-    "bin_count": 3000000
+    "bin_count": 2000000
   },
   "redcap_log_event2": {
     "column": "log_event_id",
     "last_max": 0,
-    "bin_count": 3000000
+    "bin_count": 2000000
   },
   "redcap_log_event3": {
     "column": "log_event_id",
     "last_max": 0,
-    "bin_count": 3000000
+    "bin_count": 2000000
   },
   "redcap_log_event4": {
     "column": "log_event_id",
     "last_max": 0,
-    "bin_count": 3000000
+    "bin_count": 2000000
   },
   "redcap_log_event5": {
     "column": "log_event_id",
     "last_max": 0,
-    "bin_count": 3000000
+    "bin_count": 2000000
   },
   "redcap_log_event6": {
     "column": "log_event_id",
     "last_max": 0,
-    "bin_count": 3000000
+    "bin_count": 2000000
   },
   "redcap_log_event7": {
     "column": "log_event_id",
     "last_max": 0,
-    "bin_count": 3000000
+    "bin_count": 2000000
   },
   "redcap_log_event8": {
     "column": "log_event_id",
     "last_max": 0,
-    "bin_count": 3000000
+    "bin_count": 2000000
   },
   "redcap_log_event9": {
     "column": "log_event_id",
     "last_max": 0,
-    "bin_count": 3000000
+    "bin_count": 2000000
   },
   "redcap_log_view": {
     "column": "log_view_id",
@@ -52,7 +52,7 @@
   "redcap_log_view_old": {
     "column": "log_view_id",
     "last_max": 0,
-    "bin_count": 10000000
+    "bin_count": 8000000
   },
   "redcap_outgoing_email_sms_log": {
     "column": "email_id",

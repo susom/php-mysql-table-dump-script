@@ -1,7 +1,7 @@
 {
   "em_user_project_sessions": {
     "column": "id",
-    "bin_count": 5000000
+    "bin_count": 7000000
   },
   "redcap_alerts_sent_log": {
     "column": "alert_sent_log_id",
@@ -9,11 +9,11 @@
   },
   "redcap_data": {
     "column": "project_id",
-    "bin_count": 30000000
+    "bin_count": 20000000
   },
   "redcap_log_api_allowlist": {
     "column": "log_id",
-    "bin_count": 10000000
+    "bin_count": 5000000
   },
   "redcap_edocs_metadata": {
     "column": "doc_id",
@@ -25,7 +25,7 @@
   },
   "redcap_metadata_archive": {
     "column": "project_id",
-    "bin_count": 5000000
+    "bin_count": 4000000
   },
   "redcap_surveys_emails": {
     "column": "email_id",
