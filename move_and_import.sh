@@ -72,6 +72,9 @@ do
       # rename local file by appending a done suffix
       # start importing the file
       echo "Finished $filename moving to done" | tee -a $OUTPUTFILE
+      echo "Filename: $filename"
+      echo "DEST: done/$filename"
+      echo "PWD: $(pwd)"
       mv "$filename" "done/$filename"
     el
       #error
