@@ -91,12 +91,6 @@ do
     echo "$(date -u) [$filename] (1 of $cnt) Copying to $BUCKET/$BUCKETFOLDER" | tee -a $OUTPUTFILE
     gsutil -o GSUtil:parallel_composite_upload_threshold=150M cp $filename gs://$BUCKET/$BUCKETFOLDER/$filename
 
-    #step 2: try import it
-#    # check that no active processes are running before beginning import
-##    echo "DEBUG: About to wait" | tee -a $OUTPUTFILE
-#    waitForProcess
-##    echo "DEBUG: Done wait" | tee -a $OUTPUTFILE
-
     if importBucket; then
       #success
       # rename local file by appending a done suffix
