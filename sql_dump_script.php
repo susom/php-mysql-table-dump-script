@@ -171,14 +171,17 @@ class rds
                 $i = 0;
                 foreach ($ranges as $start => $end) {
                     $i++;
-                    $part = str_pad($i, $digits, "0", STR_PAD_LEFT) . "of" . count($ranges);
+                    $part = str_pad($i, $digits, "0", STR_PAD_LEFT) . "_of_" .
+                        str_pad(count($ranges), $digits, "0", STR_PAD_LEFT);
+
+                    $underPad = 38-strlen($part);
                     $dumps[] = [
                         "table" => $table,
                         "where" => "--where=\"$column > $start and $column <= $end\"",
                         "create" => $start == 0 ? "" : "--skip-add-drop-table --no-create-info",
                         "type" => "range",
                         "last_max" => $end,
-                        "filename" => str_pad("r_" . $table, 32, "_", STR_PAD_RIGHT) .
+                        "filename" => str_pad("r_" . $table, $underPad, "_", STR_PAD_RIGHT) .
                             $part . "_" .
                             str_pad($start, 10, "0", STR_PAD_LEFT) . "_" .
                             str_pad($end, 10, "0", STR_PAD_LEFT)
