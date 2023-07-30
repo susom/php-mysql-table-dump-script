@@ -77,7 +77,7 @@ do
       echo "DEST: done/$filename"
       echo "PWD: $(pwd)"
       mv "$filename" "done/$filename"
-    el
+    else
       #error
       echo "Error importing $filename" | tee -a $OUTPUTFILE
       mv "$filename" "error/$filename"
