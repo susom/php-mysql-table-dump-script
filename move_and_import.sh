@@ -20,7 +20,7 @@ function waitForProcess() {
   if [[ -z "$PROCESS" ]]; then
     echo "DEBUG: Starting WaitForProcess $PROCESS" | tee -a $OUTPUTFILE
     PROCESS_RESULT=gcloud sql operations wait "$PROCESS" --timeout=unlimited --verbosity="critical" 2>&1 | tee -a $OUTPUTFILE
-    echo "DEBUG: waitForProcess RESULT: $PROCESS_RESULT" | tee -a $OUTPUTFILE
+    echo "DEBUG: waitForProcess PROCESS_RESULT: $PROCESS_RESULT" | tee -a $OUTPUTFILE
   fi
 }
 
@@ -30,7 +30,9 @@ function importBucket() {
   echo "[RESULT]: $IMPORT_RESULT" | tee -a $OUTPUTFILE
 
   # parse out job id:
-  PROCESS=$(echo $IMPORT_RESULT | rev | cut -d "/" -f1 | rev)
+  #PROCESS=$(echo $IMPORT_RESULT | rev | cut -d "/" -f1 | rev)
+  PROCESS=$(echo $IMPORT_RESULT | grep -Ewo '[[:xdigit:]]{8}(-[[:xdigit:]]{4}){3}-[[:xdigit:]]{12}')
+
   echo "[PROCESS]: $PROCESS" | tee -a $OUTPUTFILE
 
   if [[ -z "$PROCESS" ]]; then
