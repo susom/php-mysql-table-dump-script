@@ -64,10 +64,11 @@ do
 
     #step 2: try import it
     # check that no active processes are running before beginning import
+    echo "DEBUG: About to wait" | tee -a $OUTPUTFILE
     waitForProcess
-    IMPORT_RESULT=importBucket
+    echo "DEBUG: Done wait" | tee -a $OUTPUTFILE
 
-    if [[ $IMPORT_RESULT ]]; then
+    if importBucket; then
       #success
       # rename local file by appending a done suffix
       # start importing the file
@@ -78,7 +79,7 @@ do
       mv "$filename" "done/$filename"
     el
       #error
-      echo "Finished $filename with error" | tee -a $OUTPUTFILE
+      echo "Error importing $filename" | tee -a $OUTPUTFILE
       mv "$filename" "error/$filename"
     fi
     # take a breath
