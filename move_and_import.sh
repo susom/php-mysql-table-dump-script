@@ -65,7 +65,7 @@ do
 
     #step 1: copy file to bucket
     echo "$(date -u) [$filename] (1 of $cnt) Copying to $BUCKET/$BUCKETFOLDER" | tee -a $OUTPUTFILE
-    gsutil cp $filename gs://$BUCKET/$BUCKETFOLDER/$filename
+    gsutil -o GSUtil:parallel_composite_upload_threshold=150M cp $filename gs://$BUCKET/$BUCKETFOLDER/$filename
 
     #step 2: try import it
     # check that no active processes are running before beginning import
