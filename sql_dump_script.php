@@ -174,7 +174,7 @@ class rds
                     $part = str_pad($i, $digits, "0", STR_PAD_LEFT) . "_of_" .
                         str_pad(count($ranges), $digits, "0", STR_PAD_LEFT);
 
-                    $underPad = 38-strlen($part);
+                    $underPad = 30; //8-strlen($part);
                     $dumps[] = [
                         "table" => $table,
                         "where" => "--where=\"$column > $start and $column <= $end\"",
