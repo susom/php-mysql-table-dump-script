@@ -47,7 +47,19 @@ function importBucket() {
 #    echo "DEBUG: PROCESS $PROCESS is running" | tee -a $OUTPUTFILE
     waitForProcess
 #    echo "DEBUG: PROCESS $PROCESS is done" | tee -a $OUTPUTFILE
-    return 0
+
+    # Retry one more time
+    echo "DEBUG: RETRYING IMPORT BUCKET on $filename"
+    importBucket
+    RETRY=$?
+
+    if [[ $RETRY -eq 1 ]]; then
+      return 1
+    else
+      # fail
+      return 0
+    fi
+    # return 0
   else
     # PROCESS FOUND
 
